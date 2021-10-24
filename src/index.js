@@ -2,42 +2,40 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import './index.css';
 
-class Square extends React.Component {
-  // NO longer nedded as Square will not keep track of game state
-  // constructor(props){
-  //   super(props);
-  //   this.state = {
-  //     value: null,
-  //   }
-  // }
+// CHANGING from class components to function components
+// A much easier process than class components
+// Also less tedious
 
-
-  render() {
-     // By calling this.setState from onClick handler, this tells React to re-render that Square when <button> is clicked
-      // When setState is called in component, React will automatically update child components
-    return (
-      <button 
-      className="square" 
-      onClick={()=> this.props.onClick()}
-      >
-        {this.props.value}
-      </button>
-    );
-  }
+function Square(props){
+  return (
+    <button 
+    className="square"
+    onClick={props.onClick}>
+      {props.value}
+    </button>
+  )
 }
 
 class Board extends React.Component {
   constructor(props){
     super(props)
     this.state = {
-      squares: Array(9).fill(null)
+      squares: Array(9).fill(null),
+      xIsNext: true,
+      // Each time a player moves, xIsNext (boolean) will be flipped to determine which player goes next and the game's state will be saved
+    
     }
   }
 
   handleClick(i){
     const squares = this.state.squares.slice();
-    squares[i] = 'X';
-    this.setState({squares: squares})
+
+    // Changes from X and O from each click
+    squares[i] = this.state.xIsNext ? 'X' : 'O';
+    this.setState({
+      squares: squares,
+      xIsNext: !this.state.xIsNext,
+    })
     // AS square is no longer maintaining state, the Square components receive value from Board components and inform them when they're clicked
     // Ie. these are now controlled components, as Board now has full control over them
   }
@@ -54,8 +52,9 @@ class Board extends React.Component {
     />;
   }
 
+  // Will display text indicating player's turn
   render() {
-    const status = 'Next player: X';
+    const status = 'Next player: ' + (this.state.xIsNext ? 'X' : 'O')
 
     return (
       <div>
