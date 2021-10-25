@@ -85,34 +85,63 @@ class Game extends React.Component {
           squares: Array(9).fill(null),
         },
       ],
-      xIsNext: true,
+      stepNumber: 0,
+      xIsNext: true
     };
   }
 
+  // At this point, Board component only needs renderSquare and render methods
   handleClick(i) {
-    const history = this.state.history;
-    const current = history[history.length - 1]
+    const history = this.state.history.slice(0, this.state.stepNumber + 1);
+    const current = history[history.length - 1];
     const squares = current.squares.slice();
-  
-
-    // We can change Board handleClick function to return early by ignoring a click if someone has won a game or Square is already filled
     if (calculateWinner(squares) || squares[i]) {
       return;
     }
-
-    // Changes from X and O from each click
     squares[i] = this.state.xIsNext ? "X" : "O";
     this.setState({
-      squares: squares,
-      xIsNext: !this.state.xIsNext,
+      history: history.concat([
+        {
+          squares: squares
+        }
+      ]),
+      stepNumber: history.length,
+      xIsNext: !this.state.xIsNext
     });
   }
+
+  // THIS WILL update the stepNUmber
+  jumpTo(step) {
+    this.setState({
+      stepNumber: step,
+      xIsNext: (step % 2) === 0
+    });
+  }
+
 
   render() {
     // Updates Game component render function to use most recent history to determine and display game status
     const history = this.state.history;
-    const current = history[history.length - 1];
+    // Rendering currently selected move according to stepNumber
+    const current = history[this.state.stepNumber];
     const winner = calculateWinner(current.squares);
+
+    // mapping over history
+    // ITERATING over history array:
+    //  step variable: current history element value
+    //  move variable: current history index
+    //  step will not be assigned to anything
+    const moves = history.map((step, move) => {
+      const desc = move ?
+        'Go to move #' + move :
+        'Go to game start';
+      return (
+        <li key={move}>
+          <button onClick={() => this.jumpTo(move)}>{desc}</button>
+        </li>
+      );
+    });
+
     let status;
     if (winner) {
       status = `Winner: ${winner}`;
@@ -132,13 +161,17 @@ class Game extends React.Component {
         </div>
         <div className="game-info">
           <div>{status}</div>
-          <ol>{/* TODO */}</ol>
+          <ol>{moves}</ol>
         </div>
       </div>
     );
   }
 }
 
+
+// ========================================
+
+ReactDOM.render(<Game />, document.getElementById("root"));
 // Determining winner based on possition
 // Returns 'x', 'o' or null as appropriate
 function calculateWinner(squares) {
@@ -162,6 +195,4 @@ function calculateWinner(squares) {
   return null;
 }
 
-// ========================================
 
-ReactDOM.render(<Game />, document.getElementById("root"));
